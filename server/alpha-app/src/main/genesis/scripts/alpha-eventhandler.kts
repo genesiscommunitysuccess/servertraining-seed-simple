@@ -30,7 +30,7 @@ eventHandler {
             }
 
             onValidate{ trade ->
-                require(LocalDate.of(trade.tradeDate!!.year, trade.tradeDate!!.monthOfYear, trade.tradeDate!!.dayOfMonth) >= LocalDate.of(now().year, now().monthOfYear, now().dayOfMonth))
+                require(LocalDate.of(trade.tradeDate.year, trade.tradeDate.monthOfYear, trade.tradeDate.dayOfMonth) >= LocalDate.of(now().year, now().monthOfYear, now().dayOfMonth))
             }
             onEvent { event ->
                 event.withDetails {
@@ -47,7 +47,7 @@ eventHandler {
                 fromStates(TradeStatus.NEW)
 
                 onValidate{ trade ->
-                    require(LocalDate.of(trade.tradeDate!!.year, trade.tradeDate!!.monthOfYear, trade.tradeDate!!.dayOfMonth +2) >= LocalDate.of(now().year, now().monthOfYear, now().dayOfMonth))
+                    require(LocalDate.of(trade.tradeDate.year, trade.tradeDate.monthOfYear, trade.tradeDate.dayOfMonth +2) >= LocalDate.of(now().year, now().monthOfYear, now().dayOfMonth))
                 }
 
                 onEvent{ event, trade ->
@@ -61,11 +61,11 @@ eventHandler {
 
                 onValidate{ trade ->
                     require(trade.direction == Direction.BUY)
-                    require(LocalDate.of(trade.tradeDate!!.year, trade.tradeDate!!.monthOfYear, trade.tradeDate!!.dayOfMonth + 1) >= LocalDate.of(now().year, now().monthOfYear, now().dayOfMonth))
+                    require(LocalDate.of(trade.tradeDate.year, trade.tradeDate.monthOfYear, trade.tradeDate.dayOfMonth + 1) >= LocalDate.of(now().year, now().monthOfYear, now().dayOfMonth))
                 }
 
                 onEvent{ event, trade ->
-                    trade.enteredBy = null
+                    trade.enteredBy = event.userName
                     trade.tradeDate = now()
                     trade.tradeStatus = TradeStatus.CANCELLED
                 }

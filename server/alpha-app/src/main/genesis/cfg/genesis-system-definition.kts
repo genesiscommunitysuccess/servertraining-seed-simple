@@ -33,7 +33,7 @@ systemDefinition {
 
     systems {
 
-        system(name = "PROD") {
+        system(name = "DEV") {
 
             hosts {
                 host(LOCAL_HOST)
