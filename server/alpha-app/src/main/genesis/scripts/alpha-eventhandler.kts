@@ -8,7 +8,7 @@
  *
  * Modification History
  */
-import genesis.global.message.event.PositionReport
+import genesis.global.message.event.*
 import global.genesis.jackson.core.GenesisJacksonMapper
 import java.io.File
 import java.time.LocalDate
@@ -17,59 +17,44 @@ import global.genesis.commons.standards.GenesisPaths
 
 eventHandler {
 
-    stateMachine(TRADE.TRADE_STATUS){
-
-        // EVENT_TRADE_INSERT
-        insertEvent {
-            initialStates(TradeStatus.NEW)
-
-            permissions {
-                auth(mapName = "ENTITY_VISIBILITY") {
-                    field { counterpartyId }
-                }
+    eventHandler<Trade>(name = "TRADE_INSERT") {
+        onValidate { event ->
+            val message = event.details
+            verify {
+                require(message.quantity > 0){ "Quantity must be greater than 0" }
+                entityDb hasEntry Counterparty.byId(message.counterpartyId.toString())
+                entityDb hasEntry Instrument.byId(message.instrumentId)
             }
-
-            onValidate{ trade ->
-                require(LocalDate.of(trade.tradeDate.year, trade.tradeDate.monthOfYear, trade.tradeDate.dayOfMonth) >= LocalDate.of(now().year, now().monthOfYear, now().dayOfMonth))
-            }
-            onEvent { event ->
-                event.withDetails {
-                    enteredBy = event.userName
-                }
-            }
+            ack()
         }
+        onCommit { event ->
+            val trade = event.details
+            entityDb.insert(trade)
+            ack()
+        }
+    }
 
-        modifyEvent {
-            mutableStates(TradeStatus.ALLOCATED, TradeStatus.CANCELLED)
-
-            // EVENT_TRADE_ALLOCATED
-            transitionEvent(TradeStatus.ALLOCATED){
-                fromStates(TradeStatus.NEW)
-
-                onValidate{ trade ->
-                    require(LocalDate.of(trade.tradeDate.year, trade.tradeDate.monthOfYear, trade.tradeDate.dayOfMonth +2) >= LocalDate.of(now().year, now().monthOfYear, now().dayOfMonth))
-                }
-
-                onEvent{ event, trade ->
-                    trade.enteredBy = event.userName
-                }
+    eventHandler<Trade>(name = "TRADE_MODIFY", transactional = true) {
+        onValidate { event ->
+            val message = event.details
+            verify {
+                entityDb hasEntry Counterparty.ById(message.counterpartyId.toString())
+                entityDb hasEntry Instrument.byId(message.instrumentId)
             }
+            ack()
+        }
+        onCommit { event ->
+            val trade = event.details
+            entityDb.modify(trade)
+            ack()
+        }
+    }
 
-            // EVENT_TRADE_CANCELLED
-            transitionEvent(TradeStatus.CANCELLED){
-                fromStates(TradeStatus.NEW, TradeStatus.ALLOCATED)
-
-                onValidate{ trade ->
-                    require(trade.direction == Direction.BUY)
-                    require(LocalDate.of(trade.tradeDate.year, trade.tradeDate.monthOfYear, trade.tradeDate.dayOfMonth + 1) >= LocalDate.of(now().year, now().monthOfYear, now().dayOfMonth))
-                }
-
-                onEvent{ event, trade ->
-                    trade.enteredBy = event.userName
-                    trade.tradeDate = now()
-                    trade.tradeStatus = TradeStatus.CANCELLED
-                }
-            }
+    eventHandler<Trade>(name = "TRADE_DELETE", transactional = true) {
+        onCommit { event ->
+            val trade = event.details
+            entityDb.delete(trade)
+            ack()
         }
     }
 
@@ -117,7 +102,7 @@ eventHandler {
         }
     }
 
-    eventHandler<PositionReport> (name="POSITION_REPORT"){
+    eventHandler<PositionReport>(name = "POSITION_REPORT") {
         onCommit {
             val mapper = GenesisJacksonMapper.csvWriter<TradeView>()
             val today = LocalDate.now().toString()
@@ -133,6 +118,20 @@ eventHandler {
                     mapper.writeValues(file).use { it.writeAll(trades) }
                 }
 
+            ack()
+        }
+    }
+
+    eventHandler<TradeStandardization>(transactional = true) {
+        onCommit {
+            val tradesNegativePrices = entityDb.getBulk(TRADE).toList()
+                .filter { it.price < 0 }
+
+            tradesNegativePrices.forEach {
+                it.price = 0.0
+            }
+
+            entityDb.modifyAll(*tradesNegativePrices.toList().toTypedArray())
             ack()
         }
     }

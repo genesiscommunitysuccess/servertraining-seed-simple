@@ -22,7 +22,6 @@ views {
 
         fields {
             TRADE.allFields()
-
             COUNTERPARTY.COUNTERPARTY_NAME
             INSTRUMENT.INSTRUMENT_NAME
             INSTRUMENT.MARKET_ID withPrefix INSTRUMENT

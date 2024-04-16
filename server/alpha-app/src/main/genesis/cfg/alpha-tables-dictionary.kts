@@ -13,19 +13,30 @@ tables {
 
     table (name = "TRADE", id = 2000, audit = details(id = 2100, sequence = "TR")) {
         sequence(TRADE_ID, "TR")
-        TRADE_DATE
-        ENTERED_BY
-        TRADE_STATUS
-        COUNTERPARTY_ID not null
+        COUNTERPARTY_ID
         INSTRUMENT_ID not null
         QUANTITY
         PRICE not null
         SYMBOL
         DIRECTION
+        TRADE_DATE
+        ENTERED_BY
+        TRADE_STATUS
+        CURRENCY_ID
 
         primaryKey {
             TRADE_ID
         }
+
+        indices {
+            unique {
+                SYMBOL
+            }
+            nonUnique {
+                CURRENCY_ID
+            }
+        }
+
     }
 
     table (name = "COUNTERPARTY", id = 2001) {
