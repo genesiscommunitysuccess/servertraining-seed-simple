@@ -12,9 +12,9 @@
 fields {
 
     field("TRADE_ID", type = STRING)
-    field("QUANTITY", type = INT)
+    field("QUANTITY", type = INT, nullable = NULLABILITY_FOR_TRADE_FIELDS)
     field("PRICE", type = DOUBLE)
-    field("SYMBOL", type = STRING)
+    field("SYMBOL", type = STRING, nullable = NULLABILITY_FOR_TRADE_FIELDS)
     field("DIRECTION", type = ENUM("BUY", "SELL", default = "BUY"))
 
     field("COUNTERPARTY_ID", type = STRING)
@@ -26,11 +26,11 @@ fields {
     field("INSTRUMENT_NAME", type = STRING)
     field("MARKET_ID", type = STRING)
     field("COUNTRY_CODE", type = STRING)
-    field("CURRENCY_ID", type = STRING)
+    field("CURRENCY_ID", type = INT)
     field("ASSET_CLASS", type = STRING)
 
-    field("TRADE_DATE", type = DATE)
-    field("ENTERED_BY", type = STRING)
+    field("TRADE_DATE", type = DATE, nullable = NULLABILITY_FOR_TRADE_FIELDS)
+    field("ENTERED_BY", type = STRING, nullable = NULLABILITY_FOR_TRADE_FIELDS)
     field(name = "TRADE_STATUS", type = ENUM("NEW", "ALLOCATED", "CANCELLED", default = "NEW"))
 
     field("POSITION_ID", type = STRING)
@@ -38,5 +38,4 @@ fields {
     field("LAST_PRICE", type = DOUBLE)
     field("VALUE", type = DOUBLE)
     field("PNL", type = DOUBLE)
-
 }
