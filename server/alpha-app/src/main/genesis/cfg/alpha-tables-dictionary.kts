@@ -13,7 +13,7 @@ tables {
 
     table (name = "TRADE", id = 2000, audit = details(id = 2100, sequence = "TR")) {
         sequence(TRADE_ID, "TR")
-        COUNTERPARTY_ID
+        COUNTERPARTY_ID not null
         INSTRUMENT_ID not null
         QUANTITY
         PRICE not null
@@ -34,6 +34,12 @@ tables {
             }
             nonUnique {
                 CURRENCY_ID
+            }
+            nonUnique {
+                INSTRUMENT_ID
+            }
+            nonUnique {
+                COUNTERPARTY_ID
             }
         }
 
