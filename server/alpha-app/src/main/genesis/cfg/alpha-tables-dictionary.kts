@@ -59,7 +59,7 @@ tables {
     table (name = "INSTRUMENT", id = 2002) {
         sequence(INSTRUMENT_ID, "IN")
         INSTRUMENT_NAME
-        MARKET_ID not null
+        MARKET_ID
         COUNTRY_CODE
         CURRENCY_ID
         ASSET_CLASS
