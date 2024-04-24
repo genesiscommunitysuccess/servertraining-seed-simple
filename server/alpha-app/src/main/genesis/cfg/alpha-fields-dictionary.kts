@@ -38,4 +38,10 @@ fields {
     field("LAST_PRICE", type = DOUBLE)
     field("VALUE", type = DOUBLE)
     field("PNL", type = DOUBLE)
+
+    field("COMPANY_ID", type = STRING)
+    field("COMPANY_NAME", type = STRING)
+    field("COMPANY_LEI", type = STRING)
+    field("COMPANY_CEO", type = STRING)
+    field(name = "COMPANY_STATUS", type = ENUM("NEW", "OPENED", "CLOSED", default = "NEW"))
 }
