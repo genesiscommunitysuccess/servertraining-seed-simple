@@ -39,6 +39,11 @@ fields {
     field("VALUE", type = DOUBLE)
     field("PNL", type = DOUBLE)
 
+    field("USER_COUNTERPARTY_HIDE_LEI_ID", type= STRING)
+    field("USER_NAME_COUNTERPARTY", type= STRING)
+    field("HIDE_LEI", type= BOOLEAN)
+    field("BEEN_AUDITED", type= BOOLEAN)
+
     field("COMPANY_ID", type = STRING)
     field("COMPANY_NAME", type = STRING)
     field("COMPANY_LEI", type = STRING)

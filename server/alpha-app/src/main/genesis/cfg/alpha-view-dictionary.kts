@@ -9,19 +9,21 @@
  * Modification History
  */
 views {
+
     view("TRADE_VIEW", TRADE) {
 
         joins {
-            joining(COUNTERPARTY) {
-                on(TRADE.COUNTERPARTY_ID to COUNTERPARTY { COUNTERPARTY_ID })
+            joining(COUNTERPARTY, JoinType.INNER) {
+                on(TRADE { COUNTERPARTY_ID } to COUNTERPARTY { COUNTERPARTY_ID })
             }
-            joining(INSTRUMENT) {
-                on(TRADE.INSTRUMENT_ID to INSTRUMENT { INSTRUMENT_ID })
+            joining(INSTRUMENT, JoinType.INNER) {
+                on(TRADE { INSTRUMENT_ID } to INSTRUMENT { INSTRUMENT_ID })
             }
         }
 
         fields {
             TRADE.allFields()
+
             COUNTERPARTY.COUNTERPARTY_NAME
             INSTRUMENT.INSTRUMENT_NAME
             INSTRUMENT.MARKET_ID withPrefix INSTRUMENT
@@ -32,7 +34,42 @@ views {
                     QUANTITY * PRICE
                 }
             }
+
+            derivedField("TRADE_ASSET_CLASS", STRING) {
+                withInput(INSTRUMENT.ASSET_CLASS) {ASSET_CLASS ->
+                    if (ASSET_CLASS == null) {
+                        "UNKOWN"
+                    }
+                    ASSET_CLASS
+                }
+            }
         }
     }
+
+    view("COUNTERPARTY_VIEW", COUNTERPARTY) {
+        fields {
+            COUNTERPARTY.allFields()
+        }
+    }
+
+    view("TRAINING_VIEW", TRADE) {
+
+        joins {
+            joining(INSTRUMENT, JoinType.INNER) {
+                on(TRADE { INSTRUMENT_ID } to INSTRUMENT { INSTRUMENT_ID })
+                    .and(INSTRUMENT.MARKET_ID.asParameter())
+            }
+        }
+
+        fields {
+            TRADE.allFields()
+
+            INSTRUMENT.INSTRUMENT_NAME
+            INSTRUMENT.CURRENCY_ID withAlias "CURRENCY"
+
+
+        }
+    }
+
 
 }
