@@ -23,6 +23,7 @@ tables {
         ENTERED_BY
         TRADE_STATUS
         CURRENCY_ID
+        BEEN_AUDITED
 
         primaryKey {
             TRADE_ID
