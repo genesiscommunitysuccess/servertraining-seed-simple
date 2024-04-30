@@ -18,11 +18,28 @@ import global.genesis.commons.standards.GenesisPaths
 eventHandler {
 
     eventHandler<Trade>(name = "TRADE_INSERT") {
+        schemaValidation = false
+
+        onValidate { event ->
+            val message = event.details
+            verify {
+                entityDb hasEntry Counterparty.byId(message.counterpartyId.toString())
+                entityDb hasEntry Instrument.byId(message.instrumentId.toString())
+            }
+            ack()
+        }
 
         onCommit { event ->
             val trade = event.details
-            entityDb.insert(trade)
-            ack()
+
+            if (trade.quantity!! > 0) {
+                trade.enteredBy = event.userName
+                entityDb.insert(trade)
+                ack()
+            }
+            else {
+                nack("Quantity must be positive")
+            }
         }
     }
 
