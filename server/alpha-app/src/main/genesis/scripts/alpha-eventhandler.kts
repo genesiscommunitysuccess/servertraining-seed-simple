@@ -9,8 +9,6 @@
  * Modification History
  */
 import genesis.global.message.event.*
-import genesis.global.eventhandler.validate.*
-import genesis.global.eventhandler.commit.*
 import global.genesis.jackson.core.GenesisJacksonMapper
 import java.io.File
 import java.time.LocalDate
@@ -19,21 +17,12 @@ import global.genesis.commons.standards.GenesisPaths
 
 eventHandler {
 
-    eventHandler<Trade, CustomTradeEventReply>(name = "TRADE_INSERT") {
+    eventHandler<Trade>(name = "TRADE_INSERT") {
 
-        onException{ event, throwable ->
-            CustomTradeEventReply.TradeNck("ERROR: ${throwable.message}")
-        }
-
-        onValidate { event ->
-            ValidateTrade.validateInsert(event,entityDb)
-            CustomTradeEventReply.ValidationTradeAck()
-        }
         onCommit { event ->
             val trade = event.details
             entityDb.insert(trade)
-            CustomTradeEventReply.TradeAck("TRADE_INSERT_ACK")
-
+            ack()
         }
     }
 
@@ -60,17 +49,6 @@ eventHandler {
             ack()
         }
     }
-    eventHandler<Trade>(name="TRADE_UPSERT"){
-        schemaValidation = false
-        onValidate {
-            ValidateTrade.validateUpsert(it,entityDb)
-            ack()
-        }
-        onCommit {
-            CommitTrade.upsert(it,entityDb)
-            ack()
-        }
-    }
 
     eventHandler<Counterparty>(name = "COUNTERPARTY_INSERT") {
         schemaValidation = false
@@ -88,27 +66,8 @@ eventHandler {
     }
 
     eventHandler<Counterparty>(name = "COUNTERPARTY_DELETE") {
-        onValidate{
-            ValidateCounterparty.validateDelete(it, entityDb)
-            ack()
-        }
         onCommit { event ->
             entityDb.delete(event.details)
-            ack()
-        }
-    }
-    eventHandler<Counterparty>(name="COUNTERPARTY_UPSERT"){
-        schemaValidation = false
-
-        onCommit {
-            CommitCounterparty.upsert(it,entityDb)
-            ack()
-        }
-    }
-    eventHandler<Instrument>(name="INSTRUMENT_UPSERT"){
-        schemaValidation = false
-        onCommit {
-            CommitInstrument.upsert(it,entityDb)
             ack()
         }
     }
@@ -129,29 +88,7 @@ eventHandler {
     }
 
     eventHandler<Instrument>(name = "INSTRUMENT_DELETE") {
-        onValidate{
-            ValidateInstrument.validateDelete(it, entityDb)
-            ack()
-        }
         onCommit { event ->
-            entityDb.delete(event.details)
-            ack()
-        }
-    }
-
-    contextEventHandler<Instrument, List<Trade>>(name = "INSTRUMENT_DELETE_CASCADE", transactional = true){
-        onValidate{ event ->
-            val trades = ValidateInstrument.validateCascadeDelete(event, entityDb)
-            validationResult(ack(),trades)
-        }
-
-        onCommit{ event, trades ->
-            if(trades != null){
-                for (trade in trades){
-                    LOG.info("Deleting trade ${trade.tradeId}")
-                    entityDb.delete(Trade.byId(trade.tradeId))
-                }
-            }
             entityDb.delete(event.details)
             ack()
         }
@@ -173,27 +110,6 @@ eventHandler {
                     mapper.writeValues(file).use { it.writeAll(trades) }
                 }
 
-            ack()
-        }
-    }
-
-    eventHandler<TradeStandardization>(transactional = true) {
-        onCommit {
-            val tradesNegativePrices = entityDb.getBulk(TRADE).toList()
-                .filter { it.price < 0 }
-
-            tradesNegativePrices.forEach {
-                it.price = 0.0
-            }
-
-            entityDb.modifyAll(*tradesNegativePrices.toList().toTypedArray())
-            ack()
-        }
-    }
-
-    eventHandler<TrainingClass>(name = "TEST"){
-        schemaValidation = false
-        onCommit{
             ack()
         }
     }

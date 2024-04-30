@@ -52,24 +52,5 @@ views {
         }
     }
 
-    view("TRAINING_VIEW", TRADE) {
-
-        joins {
-            joining(INSTRUMENT, JoinType.INNER) {
-                on(TRADE { INSTRUMENT_ID } to INSTRUMENT { INSTRUMENT_ID })
-                    .and(INSTRUMENT.MARKET_ID.asParameter())
-            }
-        }
-
-        fields {
-            TRADE.allFields()
-
-            INSTRUMENT.INSTRUMENT_NAME
-            INSTRUMENT.CURRENCY_ID withAlias "CURRENCY"
-
-
-        }
-    }
-
 
 }
