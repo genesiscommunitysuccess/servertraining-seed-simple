@@ -22,7 +22,7 @@ tables {
         field("ENTERED_BY", type = STRING)
         field("TRADE_STATUS", type = ENUM("NEW", "ALLOCATED", "CANCELLED")).default("NEW")
         field("BEEN_AUDITED", type= BOOLEAN)
-        field("CURRENCY_ID", type= STRING).nonUniqueIndex()
+        field("CURRENCY_ID", type= INT).nonUniqueIndex()
         field("INSTRUMENT_ID", type = STRING).notNull().nonUniqueIndex()
         field("COUNTERPARTY_ID", type = STRING).notNull().nonUniqueIndex()
 
@@ -42,7 +42,7 @@ tables {
         field("MARKET_ID", type = STRING)
         field("COUNTRY_CODE", type = STRING)
         field("ASSET_CLASS", type = STRING)
-        field("CURRENCY_ID", type= STRING)
+        field("CURRENCY_ID", type= INT)
     }
 
     table(name = "POSITION", id = 2003) {
